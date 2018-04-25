@@ -2,7 +2,7 @@
 # list-to-tree-lite  
 A simple function converts a flat-list of objects with `id`, `parent` and `children` to a tree-list of objects.  
 without any dependencies.
-```
+```js
 [{
     id: 6,
     any: 'opps'
@@ -22,10 +22,9 @@ without any dependencies.
     parent: 2,
     any: 'other'
 }]
-
 ```
 to
-```
+```js
 [{
     id: 6,
     any: 'opps',
@@ -50,7 +49,6 @@ to
         }]
     }]
 }]
-
 ```
 
 #Usage  
@@ -64,6 +62,20 @@ to
 
 `options.childrenKey`  
   the _children key_ of the item object, default `children`  
+  
+`options.appendChildren`  
+  append children object instead of setting empty array _when used again_, default `true`
+  
+  Example: 
+  ```js
+  let tree = listToTree(list);
+  tree.push({
+      id: 15,
+      parent: 2,
+      any: 'test'      
+  });
+  tree = listToTree(list);
+  ```
 
 #Install
 `npm install list-to-tree-lite  --save`
