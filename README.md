@@ -51,7 +51,7 @@ to
 }]
 ```
 
-#Usage  
+#### Usage  
 `listToTree(list[, options])`  
 
 `options.idKey`  
@@ -77,11 +77,11 @@ to
   tree = listToTree(list);
   ```
 
-#Install
+#### Install
 `npm install list-to-tree-lite  --save`
 
-#Test  
+#### Test  
 `npm run test`  
 
-#License  
+#### License  
 MIT:http://william17.mit-license.org
