@@ -6,7 +6,7 @@ var parentKey = 'p' + Math.random().toString().substr(-5);
 var childrenKey = 'c' + Math.random().toString().substr(-5);
 
 function genTree(itemCount, options) {
-  var options = options || {};
+  options = options || {};
   var idKey = options.idKey || 'id';
   var parentKey = options.parentKey || 'parent';
   var childrenKey = options.childrenKey || 'children';
@@ -75,7 +75,7 @@ function testRandomTree() {
     idKey: idKey,
     parentKey: parentKey,
     childrenKey: childrenKey
-  }
+  };
   var originTree = genTree(10, keys);
   var list = flattern(JSON.parse(JSON.stringify(originTree)), keys);
   var tree = listToTree(JSON.parse(JSON.stringify(list)), keys);
@@ -84,58 +84,110 @@ function testRandomTree() {
   return true;
 }
 
+function getCustomList() {
+  return [{
+    id: 6,
+    any: 'opps'
+  }, {
+    id: 2,
+    parent: 5,
+    any: 'foo'
+  }, {
+    id: 1,
+    parent: 2,
+    any: 'bar'
+  }, {
+    id: 5,
+    any: 'hello'
+  }, {
+    id: 3,
+    parent: 2,
+    any: 'other'
+  }];
+}
+
+function getCustomTree() {
+  return [{
+    id: 6,
+    any: 'opps',
+    children: []
+  }, {
+    id: 5,
+    any: 'hello',
+    children: [{
+      id: 2,
+      parent: 5,
+      any: 'foo',
+      children: [{
+        id: 1,
+        parent: 2,
+        any: 'bar',
+        children: []
+      }, {
+        id: 3,
+        parent: 2,
+        any: 'other',
+        children: []
+      }]
+    }]
+  }];
+}
 
 function testCustomTree() {
-  var list = [{
-          id: 6,
-          any: 'opps'
-      }, {
-          id: 2,
-          parent: 5,
-          any: 'foo',
-      }, {
-          id: 1,
-          parent: 2,
-          any: 'bar'
-      }, {
-          id: 5,
-          any: 'hello'
-      }, {
-          id: 3,
-          parent: 2,
-          any: 'other'
-      }];
+  var list = getCustomList();
+  var tree = getCustomTree();
 
-  var tree = [{
-          id: 6,
-          any: 'opps',
-          children: []
-      }, {
-          id: 5,
-          any: 'hello',
-          children: [{
-              id: 2,
-              parent: 5,
-              any: 'foo',
-              children: [{
-                  id: 1,
-                  parent: 2,
-                  any: 'bar',
-                  children: []
-              }, {
-                  id: 3,
-                  parent: 2,
-                  any: 'other',
-                  children: []
-              }]
-          }]
-      }];
   assert.deepEqual(listToTree(list), tree);
   return true;
 }
 
-assert.ok(testRandomTree());
-assert.ok(testCustomTree()); 
+function testCustomTreeDouble() {
+  var list = getCustomList();
+  var tree = getCustomTree();
 
+  var appendDisabled = {
+    appendChildren: false
+  };
+  var appendEnabled = {
+    appendChildren: true
+  };
+
+  assert.deepEqual(listToTree(listToTree(list)), tree);
+
+  assert.deepEqual(listToTree(listToTree(list, appendDisabled)), tree);
+  assert.deepEqual(listToTree(listToTree(list, appendEnabled)), tree);
+
+  assert.notDeepEqual(listToTree(listToTree(list), appendDisabled), tree);
+  assert.deepEqual(listToTree(listToTree(list), appendEnabled), tree);
+
+  assert.notDeepEqual(listToTree(listToTree(list, appendDisabled), appendDisabled), tree);
+  assert.notDeepEqual(listToTree(listToTree(list, appendEnabled), appendDisabled), tree);
+  assert.deepEqual(listToTree(listToTree(list, appendDisabled), appendEnabled), tree);
+  assert.deepEqual(listToTree(listToTree(list, appendEnabled), appendEnabled), tree);
+
+  list = listToTree(list, appendEnabled);
+
+  list.push({
+    id: 17,
+    parent: 2,
+    any: 'bar2'
+  });
+
+  tree[1].children[0].children.push({
+    id: 17,
+    parent: 2,
+    any: 'bar2',
+    children: []
+  });
+
+  list = listToTree(list, appendEnabled);
+  assert.deepEqual(list, tree);
+
+  return true;
+}
+
+assert.ok(testRandomTree());
+assert.ok(testCustomTree());
+assert.ok(testCustomTreeDouble());
 
 console.log('✓ passed');

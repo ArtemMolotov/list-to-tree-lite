@@ -13,27 +13,77 @@
       var ID_KEY = options.idKey || 'id';
       var PARENT_KEY = options.parentKey || 'parent';
       var CHILDREN_KEY = options.childrenKey || 'children';
-      
+
+      // append children objects if they already exists
+      var APPEND_CHILDREN = typeof options.appendChildren !== 'undefined' ? options.appendChildren : true;
+
       var tree = [], childrenOf = {};
       var item, id, parentId;
 
-      for(var i = 0, length = data.length; i < length; i++) {
+      /**
+       * Recursive search children object of item by item id
+       * @param {Object[]} data
+       * @param {int} id
+       * @return {Object[]|null} Children object or null if not found
+       */
+      var findChildrenByItemId = function (data, id) {
+        var result;
+
+        for (var i = 0, length = data.length; i < length; i++) {
+          var item = data[i];
+
+          if (item[CHILDREN_KEY]) {
+            if (item[ID_KEY] === id) {
+              return item[CHILDREN_KEY];
+            } else {
+              result = findChildrenByItemId(item[CHILDREN_KEY], id);
+              if (result) {
+                return result;
+              }
+            }
+          }
+        }
+
+        return null;
+      };
+
+      /**
+       * Get children object by item id with "caching"
+       * @param int id
+       * @return {Object[]} Children object
+       */
+      var getChildrenByItemId = function (id) {
+        if (childrenOf[id]) {
+          return childrenOf[id];
+        }
+
+        if (APPEND_CHILDREN) {
+          childrenOf[id] = findChildrenByItemId(data, id);
+        }
+
+        if (!childrenOf[id]) {
+          // every item may have children
+          childrenOf[id] = [];
+        }
+
+        return childrenOf[id];
+      };
+
+      for (var i = 0, length = data.length; i < length; i++) {
         item = data[i];
         id = item[ID_KEY];
         parentId = item[PARENT_KEY] || 0;
-        // every item may have children
-        childrenOf[id] = childrenOf[id] || [];
         // init its children
-        item[CHILDREN_KEY] = childrenOf[id];
+        item[CHILDREN_KEY] = getChildrenByItemId(id);
         if (parentId != 0) {
-          // init its parent's children object
-          childrenOf[parentId] = childrenOf[parentId] || [];
           // push it into its parent's children object
-          childrenOf[parentId].push(item);
+          if (getChildrenByItemId(parentId).indexOf(item) === -1) {
+            getChildrenByItemId(parentId).push(item);
+          }
         } else {
           tree.push(item);
-        }    
-      };
+        }
+      }
 
       return tree;
     }
